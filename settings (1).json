@@ -1,0 +1,22 @@
+{
+  "home_country": "",
+  "home_country_note": "The country the user lives in (setup fills this in). Used to match places like 'Lyon' and 'Lyon, France'.",
+  "location_keywords": [],
+  "location_keywords_note": "First-pass filter for job feeds: lowercase city, area and country names near the user (setup fills these in). Claude still checks distance and remote rules when scoring.",
+  "top_job_threshold": 60,
+  "top_job_threshold_note": "Jobs scoring this or higher are drafted and prepared first, every run.",
+  "strong_match_threshold": 75,
+  "strong_match_note": "Colour only (green score badges).",
+  "max_fills_per_run": 10,
+  "max_fills_note": "Applications drafted, prepared and filled per run. Filling forms uses a lot of Claude usage: lower this if you hit your plan's limits.",
+  "sweep_per_run": 15,
+  "sweep_note": "Target-company careers pages checked per run (rotation; priority companies every other day).",
+  "keep_means_apply": true,
+  "keep_means_apply_note": "true: every job kept on the dashboard is one you apply to; anything not worth applying to is removed (Recycle Bin/Trash) and never comes back.",
+  "ntfy_topic": "",
+  "ntfy_note": "Phone notifications via the free ntfy app. Setup creates a random topic name; it works like a private address. Notifications never contain personal details. Empty = off.",
+  "auto_submit": false,
+  "auto_submit_note": "OFF. Claude never clicks Submit; you always submit yourself.",
+  "blocked_sites": ["linkedin.com", "indeed.com", "glassdoor.com", "wuzzuf.net", "bayt.com", "naukri.com"],
+  "blocked_sites_note": "Sites Claude never opens, reads or automates (their rules forbid bots and can get your account banned). Job alert EMAILS from them are fine; Claude finds the same job on the company's own site."
+}

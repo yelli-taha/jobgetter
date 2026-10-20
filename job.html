@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% from "_jobcard.html" import jobcard with context %}
+{% block title %}{{ job.company }}: {{ job.title }}{% endblock %}
+{% block main %}
+<p><a href="{{ url_for('home') }}">&larr; Back to review</a></p>
+
+{% call jobcard(job) %}
+  {% if job.original_url %}<a class="btn" href="{{ job.original_url }}" target="_blank" rel="noopener">Original posting</a>{% endif %}
+  {% if job.apply_url %}<a class="btn" href="{{ job.apply_url }}" target="_blank" rel="noopener">Company application page</a>{% endif %}
+{% endcall %}
+
+{% if pending %}
+<div class="notice">Waiting for Claude: {% for p in pending %}{{ p.text }}{% if not loop.last %} · {% endif %}{% endfor %}<br>
+These run on the next daily scan, or right away if you say "process the queue" in the Claude app.</div>
+{% endif %}
+
+<div class="cols" id="drafts">
+  <div class="card">
+    <h2 style="margin-top:0">The posting</h2>
+    <div class="posting">{{ job.posting_text }}</div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="on" data-pane="resume">Resume</button>
+      <button data-pane="letter">Cover letter</button>
+      <button data-pane="answers">Answers ({{ job.drafts.answers|length if job.drafts and job.drafts.answers else 0 }})</button>
+      <button data-pane="history">History</button>
+    </div>
+
+    {% macro filelink(path, label) %}{% if path %}<a href="{{ url_for('job_file', job_id=path.split('/')[0], filename=path.split('/', 1)[1]) }}" target="_blank">{{ label }}</a>{% endif %}{% endmacro %}
+    {% macro checks(list) %}{% for c in list or [] %}<div class="flag {{ 'danger' if c.level == 'error' else ('warn' if c.level == 'warn' else 'ok') }}">{{ '✓ ' if c.level == 'ok' }}{{ c.text }}</div>{% endfor %}{% endmacro %}
+
+    <div class="pane on" id="resume">
+      {% if job.drafts and job.drafts.resume_pdf %}
+        {% if job.drafts.resume_is_placeholder %}<div class="notice">Placeholder: this is your master resume. A tailored version hasn't been drafted yet.</div>
+        {% else %}<p>{{ filelink(job.drafts.resume_pdf, 'Open PDF') }} · {{ filelink(job.drafts.resume_tex, 'Download .tex (for Overleaf)') }}</p>{% endif %}
+        <iframe class="pdf" src="{{ url_for('job_file', job_id=job.drafts.resume_pdf.split('/')[0], filename=job.drafts.resume_pdf.split('/', 1)[1]) }}"></iframe>
+        {% if job.drafts.resume_changes %}
+        <h2>What changed from the master</h2>
+        <ul class="changes">{% for c in job.drafts.resume_changes %}<li>{{ c }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if job.drafts.skills_choice %}
+        <h2>Skills chosen for this job</h2>
+        <ul class="changes">{% for c in job.drafts.skills_choice %}<li>{{ c }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if job.drafts.resume_version %}<p class="muted">Resume version: <b>{{ job.drafts.resume_version }}</b></p>{% endif %}
+        {% if job.drafts.resume_checks %}<h2>Automatic checks</h2>{{ checks(job.drafts.resume_checks) }}{% endif %}
+      {% else %}<div class="placeholder">No resume drafted yet.</div>{% endif %}
+    </div>
+
+    <div class="pane" id="letter">
+      {% if job.drafts and job.drafts.cover_letter_pdf %}
+        <p>{{ filelink(job.drafts.cover_letter_pdf, 'Open PDF') }} · {{ filelink(job.drafts.cover_letter_docx, 'Download Word version') }}</p>
+      {% endif %}
+      <form method="post" action="{{ url_for('job_save', job_id=job.id) }}">
+        <textarea name="cover_text" style="min-height:420px">{{ job.cover_text }}</textarea>
+        <p class="meta">Saving rebuilds the PDF and Word versions and re-runs the automatic checks.</p>
+        <p><button class="btn">Save my edits</button></p>
+      </form>
+      {% if job.drafts and job.drafts.letter_checks %}<h2>Automatic checks</h2>{{ checks(job.drafts.letter_checks) }}{% endif %}
+      {% if job.drafts and job.drafts.self_check %}
+        <h2>Claude's rule check</h2>
+        {% for c in job.drafts.self_check %}<div class="flag ok">✓ {{ c }}</div>{% endfor %}
+      {% endif %}
+    </div>
+
+    <div class="pane" id="answers">
+      {% if job.drafts and job.drafts.form_notes %}<div class="notice">{{ job.drafts.form_notes }}</div>{% endif %}
+      {% if job.drafts and job.drafts.answers %}
+      <form method="post" action="{{ url_for('job_save', job_id=job.id) }}">
+        {% for a in job.drafts.answers %}
+        <div class="answer">
+          <div class="q">{{ a.question }}</div>
+          <textarea name="answer_{{ loop.index0 }}">{{ a.answer }}</textarea>
+          <div class="src">From: {{ a.source }}{% if a.edited_by_user %} · edited by you{% endif %}</div>
+          {% if a.flag %}<div class="flag warn">{{ a.flag }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <button class="btn">Save my edits</button>
+      </form>
+      {% else %}<div class="placeholder">No custom questions for this application yet.</div>{% endif %}
+      {% for q in job.waiting_questions or [] %}
+        <div class="flag warn">Waiting for you: "{{ q.question }}" {% if q.answer %}(answered: {{ q.answer }}){% else %}<a href="{{ url_for('questions_page') }}">Answer it</a>{% endif %}</div>
+      {% endfor %}
+    </div>
+
+    <div class="pane" id="history">
+      {% for h in (job.history or [])|reverse %}<div class="meta">{{ h.date }}: {{ h.event }}</div>{% else %}<p class="empty">No history yet.</p>{% endfor %}
+      {% if job.attached %}<h2>Files attached on the company site</h2>{% for a in job.attached %}<div class="meta">{{ a.name }}{% if a.confirmed %} · checked {{ a.confirmed }}{% endif %}</div>{% endfor %}{% endif %}
+      {% if job.sent_versions %}<h2>Sent versions</h2><div class="meta">Resume: {{ job.sent_versions.resume }}<br>Cover letter: {{ job.sent_versions.cover_letter }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+
+<h2>Your decision</h2>
+<div class="card">
+  <form method="post" action="{{ url_for('job_action', job_id=job.id) }}">
+    {% if job.status in ['ready_for_review', 'changes_requested', 'needs_answers', 'drafting'] %}
+      <div class="actions">
+        <button class="btn good" name="action" value="approve" {% if job.status == 'needs_answers' %}disabled title="Answer the waiting questions first"{% endif %}>Approve: fill in the application</button>
+        <button class="btn danger" name="action" value="reject">Don't apply</button>
+      </div>
+    {% elif job.status == 'new' %}
+      <div class="actions"><button class="btn primary" name="action" value="draft_anyway">Draft now</button><button class="btn danger" name="action" value="reject">Not interested</button></div>
+    {% elif job.status == 'filled' %}
+      <p>The form is filled in on the company website. Check it, submit it yourself, then click below.</p>
+      <button class="btn good" name="action" value="submitted">Mark as submitted</button>
+    {% elif job.status in ('filtered', 'not_applying', 'not_eligible') %}
+      <button class="btn" name="action" value="restore">Bring it back</button>
+    {% endif %}
+  </form>
+
+  <form method="post" action="{{ url_for('job_action', job_id=job.id) }}" style="margin-top:16px">
+    <label class="q" for="chg">Ask for changes, in plain words</label>
+    <textarea id="chg" name="text" placeholder="e.g. Make the opening less formal and mention the project I led last summer"></textarea>
+    <div class="actions" style="margin-top:8px">
+      <button class="btn" name="action" value="request_changes">Ask for changes</button>
+      <button class="btn" name="action" value="save_to_rules" title="Applies this correction to every future application">Save this to the rules</button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === b.dataset.pane));
+});
+</script>
+{% endblock %}

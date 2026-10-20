@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}JobGetter{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header><div class="bar">
+  <a class="brand" href="{{ url_for('home') }}">JobGetter</a>
+  <nav>
+    <a href="{{ url_for('home') }}" class="{{ 'on' if request.endpoint == 'home' }}">Review{% if nav_counts.review %}<span class="count">{{ nav_counts.review }}</span>{% endif %}</a>
+    <a href="{{ url_for('review_sheet') }}" class="{{ 'on' if request.endpoint == 'review_sheet' }}">Ready to submit{% if nav_counts.sheet %}<span class="count">{{ nav_counts.sheet }}</span>{% endif %}</a>
+    <a href="{{ url_for('questions_page') }}" class="{{ 'on' if request.endpoint == 'questions_page' }}">Questions for you{% if nav_counts.questions %}<span class="count">{{ nav_counts.questions }}</span>{% endif %}</a>
+    <a href="{{ url_for('tracker') }}" class="{{ 'on' if request.endpoint == 'tracker' }}">Tracker</a>
+    <a href="{{ url_for('add_job') }}" class="{{ 'on' if request.endpoint == 'add_job' }}">Add a job</a>
+    <a href="{{ url_for('queue_page') }}" class="{{ 'on' if request.endpoint == 'queue_page' }}">Waiting for Claude{% if nav_counts.queue %}<span class="count">{{ nav_counts.queue }}</span>{% endif %}</a>
+  </nav>
+</div></header>
+<main>{% block main %}{% endblock %}</main>
+</body>
+</html>

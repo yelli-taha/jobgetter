@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Application tracker</h1>
+<p class="sub">Every application from the moment you approve it. Change the status as you hear back.</p>
+<table>
+  <tr><th>Company</th><th>Role</th><th>Status</th><th>Approved</th><th>Submitted</th><th>Documents sent</th></tr>
+  {% for job in jobs %}
+  <tr>
+    <td>{{ job.company }}{% if job.sample %} <span class="pill sample">Sample</span>{% endif %}</td>
+    <td><a href="{{ url_for('job_page', job_id=job.id) }}">{{ job.title }}</a></td>
+    <td>
+      <form method="post" action="{{ url_for('job_action', job_id=job.id) }}">
+        <input type="hidden" name="action" value="set_status">
+        <select name="status" onchange="this.form.submit()" style="min-width:170px">
+          {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if job.status == s }}>{{ STATUS_LABELS[s] }}</option>{% endfor %}
+        </select>
+      </form>
+    </td>
+    <td>{{ job.approved_on or '' }}</td>
+    <td>{{ job.submitted_on or '' }}</td>
+    <td>{% if job.sent_versions %}{{ job.sent_versions.resume.split('/')[-1] }}<br>{{ job.sent_versions.cover_letter.split('/')[-1] }}{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="empty">Nothing approved through the platform yet.</td></tr>
+  {% endfor %}
+</table>
+
+{% if past %}<h2>Earlier applications (from past-applications.md)</h2>
+<table>
+  <tr><th>Date</th><th>Company</th><th>Role</th><th>Status</th></tr>
+  {% for p in past %}<tr><td>{{ p.date }}</td><td>{{ p.company }}</td><td>{{ p.role }}</td><td>{{ p.status }}</td></tr>{% endfor %}
+</table>{% endif %}
+
+<h2>Settings</h2>
+<div class="card">
+  <div>Top-job score: <b>{{ settings.top_job_threshold }}</b> (jobs scoring this or higher are drafted and prepared first, up to {{ settings.max_fills_per_run }} per run)</div>
+  <div>Automatic submission: <b>OFF</b>. Claude never clicks Submit; you always check and submit yourself.</div>
+</div>
+{% endblock %}

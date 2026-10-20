@@ -1,0 +1,19 @@
+{% macro jobcard(job) %}
+{% set s = job.score or 0 %}
+<div class="card jobrow">
+  <div class="score {{ 'hi' if s >= settings.strong_match_threshold else ('md' if s >= 55 else 'lo') }}" title="Fit score out of 100">{{ s }}</div>
+  <div>
+    <a class="title" href="{{ url_for('job_page', job_id=job.id) }}">{{ job.title }}</a>
+    <div class="meta">{{ job.company }} · {{ job.location }}{% if job.work_setup %} · {{ job.work_setup }}{% endif %}{% if job.employment_type %} · {{ job.employment_type }}{% endif %} · found {{ job.date_found }}</div>
+    <div>
+      <span class="pill src src-{{ job.source_type }}" title="{{ job.source }}">{{ job.source_label }}</span>
+      {% if job.sample %}<span class="pill sample">Sample</span>{% endif %}
+      {% if job.target_company %}<span class="pill target">Target company</span>{% endif %}
+      <span class="pill status">{{ job.status_label }}</span>
+    </div>
+    <p class="why">{{ job.score_reason }}</p>
+    {% for f in job.all_flags %}<div class="flag {{ f.type }}">{{ f.text }}</div>{% endfor %}
+  </div>
+  <div class="actions">{{ caller() }}</div>
+</div>
+{% endmacro %}

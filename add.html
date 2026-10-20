@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Add a job</h1>
+<p class="sub">Paste a link, a job description, or both.</p>
+{% if added %}<div class="notice">Added. Claude will pick it up on the next scan, or right away if you say "process the queue" in the Claude app.</div>{% endif %}
+<div class="card">
+  <form method="post">
+    <p><label class="q" for="link">Link to the posting</label>
+    <input type="url" id="link" name="link" placeholder="https://..."></p>
+    <p class="meta">Company website links are read directly. For links from LinkedIn and other job boards, Claude never opens the link. It searches for the same job on the company's own careers page instead, and asks you to paste the description if it can't find it.</p>
+    <div class="cols" style="grid-template-columns:1fr 1fr">
+      <p><label class="q" for="company">Company (needed for job-board links)</label>
+      <input type="text" id="company" name="company"></p>
+      <p><label class="q" for="title">Job title (same)</label>
+      <input type="text" id="title" name="title"></p>
+    </div>
+    <p><label class="q" for="desc">Job description (optional)</label>
+    <textarea id="desc" name="description" style="min-height:220px" placeholder="Paste the full posting here"></textarea></p>
+    <button class="btn primary">Add job</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Questions waiting for you</h1>
+<p class="sub">Personal facts an application asked for that none of your files answer (Claude fills everything else itself and flags its guesses for you to check). Answer once: it is saved to your standard answers and reused on every future form.</p>
+{% for q in questions if not q.answer %}
+<div class="card">
+  <div class="q">{{ q.question }}</div>
+  <div class="meta">Asked by {{ q.asked_by }}{% if q.date %} · {{ q.date }}{% endif %}{% if q.job_id %} · <a href="{{ url_for('job_page', job_id=q.job_id) }}">open application</a>{% endif %}</div>
+  <form method="post" style="margin-top:8px">
+    <input type="hidden" name="question" value="{{ q.question }}">
+    <input type="hidden" name="job_id" value="{{ q.job_id }}">
+    <textarea name="answer" placeholder="Your answer"></textarea>
+    <p><button class="btn primary">Save answer</button></p>
+  </form>
+</div>
+{% else %}<p class="empty">No questions waiting. Nice.</p>{% endfor %}
+
+{% set answered = questions|selectattr('answer')|list %}
+{% if answered %}
+<h2>Answered, being filed by Claude</h2>
+{% for q in answered %}<div class="card"><div class="q">{{ q.question }}</div><div>{{ q.answer }}</div></div>{% endfor %}
+{% endif %}
+{% endblock %}

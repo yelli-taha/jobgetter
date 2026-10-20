@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Waiting for Claude</h1>
+<p class="sub">Requests from your clicks. Claude works through these on the daily scan, or right away if you say "process the queue" in the Claude app.</p>
+<table>
+  <tr><th>When</th><th>Type</th><th>Job</th><th>Details</th><th>Status</th></tr>
+  {% for q in queue %}
+  <tr>
+    <td>{{ q.created }}</td>
+    <td>{{ q.type.replace('_', ' ') }}</td>
+    <td>{% if q.job_id %}<a href="{{ url_for('job_page', job_id=q.job_id) }}">{{ names.get(q.job_id, q.job_id) }}</a>{% endif %}</td>
+    <td style="white-space:pre-wrap">{{ q.text }}</td>
+    <td>{{ q.status }}</td>
+  </tr>
+  {% else %}<tr><td colspan="5" class="empty">Nothing waiting.</td></tr>{% endfor %}
+</table>
+{% endblock %}

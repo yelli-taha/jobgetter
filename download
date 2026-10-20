@@ -1,0 +1,16 @@
+# Personal data: never uploaded
+/me/
+/jobs/
+/data/
+/settings.json
+/PROGRESS.md
+chat-export.md
+*.zip
+
+# Local environment
+.venv/
+__pycache__/
+*.pyc
+.claude/settings.local.json
+.DS_Store
+Thumbs.db

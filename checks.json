@@ -1,0 +1,32 @@
+{
+  "_about": "Rules tools/build.py checks on every resume and letter. Setup fills these from the user's answers; 'save this to the rules' adds to them. Patterns are regular expressions (case-insensitive).",
+  "letter_banned_phrases": [
+    "i am writing to apply",
+    "i'm writing to apply",
+    "i am excited to apply",
+    "i am thrilled",
+    "i am confident that i would be a great fit",
+    "i believe i would be a great fit",
+    "fast-paced environment",
+    "hit the ground running",
+    "team player",
+    "think outside the box",
+    "synergy",
+    "passionate about leveraging",
+    "thank you for your time and consideration",
+    "testament to",
+    "tapestry",
+    "delve"
+  ],
+  "letter_banned_patterns": {},
+  "resume_banned_patterns": {},
+  "never_together": [],
+  "no_em_dashes": true,
+  "no_paragraph_headers": true,
+  "skills_left": [],
+  "skills_right_default": [],
+  "skills_right_stockpile": [],
+  "skills_right_rejected": [],
+  "skills_right_count": [],
+  "max_skill_chars": 38
+}

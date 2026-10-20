@@ -1,0 +1,125 @@
+%-------------------------
+% JobGetter master resume (one page)
+% Claude fills this in during setup from your own resume.
+% Rules: only content changes per job; the layout above \begin{document} never changes.
+% Every job/experience entry starts with a line "% JOB: <short-key>" so the tools can find it.
+%------------------------
+
+\documentclass[a4paper,11pt]{article}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{array}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.6in}
+\addtolength{\textheight}{1.2in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Section formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Custom commands
+\newcommand{\resumeItem}[1]{\item\small{{#1 \vspace{-1pt}}}}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-5pt}
+}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=0.2in, itemsep=0pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+\newcommand{\resumeCourse}[2]{
+  \item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \small #1 & \textit{\small #2} \\
+    \end{tabular*}\vspace{-6pt}
+}
+
+\begin{document}
+
+%-----------HEADER-----------
+\begin{center}
+    {\Huge \scshape Your Name} \\ \vspace{1pt}
+    \href{mailto:you@example.com}{you@example.com} $|$ +00 000 000 0000 $|$
+    \href{https://www.linkedin.com/in/your-profile}{linkedin.com/in/your-profile}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {University Name \textnormal{\small -- Faculty or School}}{\textit{Jun 2022}}
+    {\hspace{0.15in}\textnormal{Bachelor of Science in \textbf{Your Major} $|$ GPA: \textbf{3.5}}}{}
+
+\resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\section{Skills}
+\vspace{-2pt}
+{\small
+\noindent\hspace{0.15in}\begin{tabularx}{0.95\textwidth}{@{}>{\raggedright\arraybackslash}p{0.55\textwidth}@{\hspace{0.3in}}>{\raggedright\arraybackslash}X@{}}
+\textbf{Tools} & \textbf{Core Competencies} \\[1pt]
+Microsoft Excel $\cdot$ PowerPoint $\cdot$ Tool Three
+&
+Competency One \newline Competency Two \newline Competency Three \\
+\end{tabularx}
+}
+\vspace{-4pt}
+
+%-----------COURSES-----------
+\section{Courses \& Certifications}
+\resumeSubHeadingListStart
+  \resumeCourse{Example Certificate Name}{Jan 2023}
+\resumeSubHeadingListEnd
+\vspace{-3pt}
+
+%-----------EXPERIENCE-----------
+\section{Professional Experience}
+\resumeSubHeadingListStart
+
+  % JOB: company-one
+  \resumeSubheading
+    {Company One}{\textit{City, Country}}
+    {Job Title}{Jul 2023 -- Present}
+    \resumeItemListStart
+      \resumeItem{What you did, how, and the result, starting with a strong verb.}
+      \resumeItem{Another achievement with a number if you have one (for example 20\% faster).}
+    \resumeItemListEnd
+
+  % JOB: company-two
+  \resumeSubheading
+    {Company Two}{\textit{City, Country}}
+    {Intern Title}{Jun 2021 -- Aug 2021}
+    \resumeItemListStart
+      \resumeItem{What you did, how, and the result.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\end{document}

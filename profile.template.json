@@ -1,0 +1,20 @@
+{
+  "name": "",
+  "email": "",
+  "phone": "",
+  "linkedin": "",
+  "website": "",
+  "file_prefix": "",
+  "paper": "a4paper",
+  "letter": {
+    "salutation": "Dear Hiring Manager,",
+    "signoff": "Sincerely,",
+    "min_words": 250,
+    "max_words": 450,
+    "max_pages": 1
+  },
+  "resume": {
+    "max_pages": 1,
+    "always_keep": []
+  }
+}

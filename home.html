@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_jobcard.html" import jobcard with context %}
+{% block main %}
+<h1>Review</h1>
+<div class="actions" style="margin:4px 0 10px">
+  <span class="meta">Source:</span>
+  <a class="pill {{ 'status' if chosen_source else 'target' }}" href="{{ url_for('home') }}">All</a>
+  {% for t, n in source_counts|dictsort %}
+    <a class="pill src src-{{ t }}" style="{{ 'outline:2px solid currentColor' if chosen_source == t }}" href="{{ url_for('home', source=t) }}">{{ source_labels[t] }} ({{ n }})</a>
+  {% endfor %}
+</div>
+<p class="sub">Every job kept here is one you apply to: Claude drafts the top ones first, then the rest. Target companies come first, then highest score. Last daily scan: {{ last_scan }}.</p>
+
+{% if attention or questions or filled %}
+<h2>Needs your attention</h2>
+<div class="card">
+  {% for job in filled %}
+    <div class="flag danger"><a href="{{ url_for('job_page', job_id=job.id) }}">{{ job.company }}: {{ job.title }}</a> is filled in and waiting for you to check and submit.</div>
+  {% endfor %}
+  {% if questions %}
+    <div class="flag warn">{{ questions|length }} question{{ 's' if questions|length > 1 }} waiting for your answer. <a href="{{ url_for('questions_page') }}">Answer now</a></div>
+  {% endif %}
+  {% for a in attention %}
+    <div class="flag {{ a.flag.type }}"><a href="{{ url_for('job_page', job_id=a.job.id) }}">{{ a.job.company }}</a>: {{ a.flag.text }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2>Review queue ({{ review|length }})</h2>
+{% for job in review %}
+  {% call jobcard(job) %}<a class="btn primary" href="{{ url_for('job_page', job_id=job.id) }}">Open drafts</a>{% endcall %}
+{% else %}<p class="empty">Nothing to review right now.</p>{% endfor %}
+
+<h2>Waiting to be drafted ({{ weaker|length }})</h2>
+<p class="sub">{% if settings.keep_means_apply %}Kept and queued: Claude drafts these after the top jobs. "Draft now" moves one to the front; "Not interested" removes it for good.{% else %}Not drafted automatically. Click "Draft now" for any you want.{% endif %}</p>
+{% for job in weaker %}
+  {% call jobcard(job) %}
+    <form method="post" action="{{ url_for('job_action', job_id=job.id) }}" class="actions">
+      <button class="btn primary" name="action" value="draft_anyway">Draft now</button>
+      <button class="btn danger" name="action" value="reject">Not interested</button>
+    </form>
+  {% endcall %}
+{% else %}<p class="empty">Nothing waiting.</p>{% endfor %}
+
+{% if not_eligible %}
+<h2>Not eligible</h2>
+<details class="card"><summary>{{ not_eligible|length }} job{{ 's' if not_eligible|length > 1 }} with an eligibility rule you don't meet (e.g. graduation year). Click to check.</summary>
+  {% for job in not_eligible %}
+  <div class="answer">
+    <div class="q"><a href="{{ url_for('job_page', job_id=job.id) }}">{{ job.company }}: {{ job.title }}</a></div>
+    <div class="meta">{{ job.not_eligible_reason or job.score_reason }}</div>
+    <form method="post" action="{{ url_for('job_action', job_id=job.id) }}"><button class="btn" name="action" value="restore">Show it anyway</button></form>
+  </div>
+  {% endfor %}
+</details>
+{% endif %}
+
+{% if filtered %}
+<h2>Left out</h2>
+<details class="card"><summary>{{ filtered|length }} job{{ 's' if filtered|length > 1 }} left out because they clearly break a hard limit in your search criteria. Click to check.</summary>
+  {% for job in filtered %}
+  <div class="answer">
+    <div class="q"><a href="{{ url_for('job_page', job_id=job.id) }}">{{ job.company }}: {{ job.title }}</a></div>
+    <div class="meta">{{ job.score_reason }}</div>
+    <form method="post" action="{{ url_for('job_action', job_id=job.id) }}"><button class="btn" name="action" value="restore">Show it anyway</button></form>
+  </div>
+  {% endfor %}
+</details>
+{% endif %}
+{% endblock %}

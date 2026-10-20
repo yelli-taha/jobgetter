@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Ready to submit{% endblock %}
+{% block main %}
+<h1>Ready to submit</h1>
+<p class="sub">Every application the last run prepared. Filled ones are waiting in their own Chrome tab: check the tab, submit it yourself, then click "Mark as submitted" here. Last run: {{ last_run }}.</p>
+
+{% if checklist.sites or checklist.email or checklist.old or checklist.check or checklist.manual %}
+<div class="card" style="border-left:4px solid var(--low)">
+  <h2 style="margin-top:0">Sign-in checklist</h2>
+  {% if checklist.sites %}
+  <p class="meta">Open each link in Chrome, sign in (or create the account), then type <b>signed in</b> in the Claude app. Claude checks each site and fills the waiting jobs.</p>
+  {% for s in checklist.sites %}
+  <div class="answer">
+    <div class="q">☐ {{ s.site }}: <a href="{{ s.link }}" target="_blank" rel="noopener">{{ s.action }}</a></div>
+    <div class="meta">{{ s.jobs|length }} waiting: {{ s.jobs|join('; ') }}</div>
+  </div>
+  {% endfor %}
+  {% else %}<p class="meta">No sign-ins needed right now.</p>{% endif %}
+  {% if checklist.email %}
+  <h3>Email applications (Gmail drafts waiting, never sent)</h3>
+  {% for e in checklist.email %}<div class="answer"><div class="q">{{ e.job }}</div><div class="meta">{{ e.note }}</div></div>{% endfor %}
+  {% endif %}
+  {% if checklist.old or checklist.check %}
+  <h3>Check the attached files</h3>
+  {% for o in checklist.old + checklist.check %}<div class="flag danger"><b>{{ o.job }}</b>: {{ o.note }}</div>{% endfor %}
+  {% endif %}
+  {% if checklist.manual %}
+  <h3>Couldn't read: please check manually</h3>
+  {% for m in checklist.manual %}<div class="answer"><div class="q">{{ m.company }}: <a href="{{ m.link }}" target="_blank" rel="noopener">Job search</a></div></div>{% endfor %}
+  {% endif %}
+</div>
+{% endif %}
+
+{% set ready = jobs|selectattr('status', 'equalto', 'filled')|list %}
+{% set needs = jobs|selectattr('status', 'equalto', 'needs_you')|list %}
+{% set prepared = jobs|selectattr('status', 'equalto', 'prepared')|list %}
+<div class="card">
+  <b>{{ ready|length }}</b> ready to submit · <b>{{ needs|length }}</b> need you · <b>{{ prepared|length }}</b> prepared, waiting to be filled
+  {% if prepared %}<div class="meta">To fill the prepared ones, type <b>fill all ready</b> in the Claude app.</div>{% endif %}
+</div>
+
+{% for job in jobs %}
+<div class="card">
+  <div class="jobrow">
+    <div class="score {{ 'hi' if (job.score or 0) >= settings.strong_match_threshold else ('md' if (job.score or 0) >= 55 else 'lo') }}">{{ job.score }}</div>
+    <div>
+      <a class="title" href="{{ url_for('job_page', job_id=job.id) }}">{{ job.company }}: {{ job.title }}</a>
+      <div>
+        {% if job.status == 'filled' %}<span class="pill" style="background:var(--good-soft);color:var(--good)">Ready to submit</span>
+        {% elif job.status == 'needs_you' %}<span class="pill" style="background:var(--low-soft);color:var(--low)">Needs you</span>
+        {% else %}<span class="pill status">{{ job.status_label }}</span>{% endif %}
+        {% if job.target_company %}<span class="pill target">Target company</span>{% endif %}
+        <span class="pill src src-{{ job.source_type }}" title="{{ job.source }}">{{ job.source_label }}</span>
+      </div>
+      {% for r in job.needs_you or [] %}<div class="flag danger">{{ r }}</div>{% endfor %}
+      {% if job.redo_pending %}<div class="flag info">Redo waiting for Claude: {{ job.redo_pending }}</div>{% endif %}
+      <div class="meta" style="margin-top:6px">
+        {% set d = job.drafts or {} %}
+        {% if d.resume_pdf %}<a href="{{ url_for('job_file', job_id=d.resume_pdf.split('/')[0], filename=d.resume_pdf.split('/', 1)[1]) }}" target="_blank">Resume{{ ' (uploaded)' if job.status == 'filled' }}</a> · {% endif %}
+        {% if d.cover_letter_pdf %}<a href="{{ url_for('job_file', job_id=d.cover_letter_pdf.split('/')[0], filename=d.cover_letter_pdf.split('/', 1)[1]) }}" target="_blank">Cover letter{{ ' (uploaded)' if job.letter_uploaded else ' (no upload field on this form)' if job.status == 'filled' else '' }}</a> · {% endif %}
+        {% if job.apply_url %}<a href="{{ job.apply_url }}" target="_blank" rel="noopener">Company application page (opens a blank copy)</a>{% endif %}
+      </div>
+      {% if job.attached %}<div class="meta" style="margin-top:4px">Attached on the site: {% for a in job.attached %}<b>{{ a.name }}</b>{% if a.confirmed %} (checked {{ a.confirmed }}){% endif %}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% endif %}
+      {% if job.unsure %}
+      <details style="margin-top:6px" open><summary>{{ job.unsure|length }} answer{{ 's' if job.unsure|length > 1 }} to check</summary>
+        {% for a in job.unsure %}
+        <div class="answer"><div class="q">{{ a.question }}</div><div style="white-space:pre-wrap">{{ a.answer }}</div><div class="flag warn">{{ a.flag }}</div></div>
+        {% endfor %}
+      </details>
+      {% endif %}
+    </div>
+    <div class="actions" style="flex-direction:column;align-items:stretch;min-width:220px">
+      <form method="post" action="{{ url_for('job_action', job_id=job.id) }}">
+        <button class="btn good" style="width:100%" name="action" value="submitted">Mark as submitted</button>
+      </form>
+      <form method="post" action="{{ url_for('job_action', job_id=job.id) }}">
+        <textarea name="text" placeholder="Redo: describe the change (e.g. shorter cover letter opening)" style="min-height:60px"></textarea>
+        <button class="btn" style="width:100%;margin-top:4px" name="action" value="redo">Redo</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% else %}
+<p class="empty">Nothing prepared yet. The next run happens when you open Claude tomorrow morning, or click "Run now" under Scheduled in the Claude app.</p>
+{% endfor %}
+{% endblock %}
