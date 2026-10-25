@@ -145,7 +145,10 @@ sections that don't apply). In particular:
   skills lists to match skills.md (left = tools; right default = always-included; stockpile = picked per job).
 - settings.json: `home_country`, `location_keywords` (lowercase names of their city, nearby cities and areas,
   the country, and ", <country code>"; add "remote" if they want remote jobs), `blocked_sites` (+ local job boards
-  whose rules forbid bots). Keep top_job_threshold 60 and max_fills_per_run 10 unless they asked otherwise.
+  whose rules forbid bots), `discovery_roles` (5-20 short job titles from their role types, e.g. "business
+  analyst", "graduate program"), `discovery_places` (their city and 1-3 nearby cities/areas) and
+  `discovery_sectors` (industries they like; leave empty for a broad mix). Keep top_job_threshold 60 and
+  max_fills_per_run 10 unless they asked otherwise.
 - data/accounts.md: one row per job site they already have an account on (Round 4, question 7), sign-in method
   "Google" or "Password". Their answer to question 8 is noted in my-rules.md, but you still ask once per session.
 Write me/profile.json LAST in this step (from starter/me/profile.template.json): name, email, phone, linkedin,
@@ -169,7 +172,9 @@ Write me/profile.json LAST in this step (from starter/me/profile.template.json):
    they don't want and add any missing.
 3. For each company: `PY tools/feeds.py discover "<Company>" ...` (finds public job feeds; check each found feed
    really is that company). For the rest, add {"company", "url" (careers page if known), "priority": true/false}
-   to data/careers-pages.json.
+   to data/careers-pages.json. Then `PY tools/discover.py seed` copies them all into the company memory
+   (data/companies.json). Explain: this list makes their jobs rank higher, and every morning JobGetter also
+   discovers new companies by itself.
 4. If they're in Egypt, copy the matching companies from docs/known-sites-egypt.md into data/site-notes.md.
    (If a known-sites file exists for their country, do the same.)
 

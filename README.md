@@ -15,7 +15,9 @@ questions, and does the rest.
 
 - **Finds jobs** from your job-alert emails, companies' own careers pages, public job feeds and the web.
   It works for wherever you live: you tell it your city and the kind of work you want, and it finds the
-  employers around you.
+  employers around you. Every morning it also **discovers new companies** (start-ups that just raised money,
+  big employers, companies like the ones you applied to) and remembers each one so it never checks the same
+  company twice for nothing. Say "morning run for <city>" to search just one other place.
 - **Scores every job** out of 100 and explains why, so the best fits come first.
 - **Writes a one-page resume and a cover letter for each job.** It works from a master resume it builds with
   you, and uses only true facts about you, in your voice.

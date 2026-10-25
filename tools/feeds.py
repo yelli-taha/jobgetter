@@ -7,6 +7,9 @@ Usage (PY = .venv\\Scripts\\python.exe on Windows, .venv/bin/python on Mac):
       Fetch every feed in data/feeds.json, keep postings whose location matches
       settings.json "location_keywords", skip ones already seen or already in jobs/,
       and write the new ones to data/candidates.json for Claude to score.
+      Jobs you removed (data/removed-jobs.json) never come back.
+  PY tools/feeds.py scan --place "<City>"
+      Same, but only postings in that one place (for "morning run for <City>").
 
 Only public, no-login job APIs are used. Sites in settings.json "blocked_sites" are never contacted.
 """
@@ -153,9 +156,11 @@ def norm(s):
     return re.sub(r"[^a-z0-9]+", " ", (s or "").lower()).strip()
 
 
-def scan():
+def scan(place=None):
+    """place = a location the user named for this run ("morning run for Lyon"): only postings there.
+    Default: settings.json location_keywords."""
     settings = json.loads(SETTINGS.read_text(encoding="utf-8"))
-    keywords = [k.lower() for k in settings.get("location_keywords", [])]
+    keywords = [place.lower()] if place else [k.lower() for k in settings.get("location_keywords", [])]
     feeds = json.loads(FEEDS.read_text(encoding="utf-8")) if FEEDS.exists() else []
     seen = set(json.loads(SEEN.read_text(encoding="utf-8"))) if SEEN.exists() else set()
     existing = set()
@@ -163,6 +168,9 @@ def scan():
         j = json.loads(f.read_text(encoding="utf-8"))
         existing.add(j.get("apply_url", ""))
         existing.add(norm(j["company"]) + "|" + norm(j["title"]))
+    removed = ROOT / "data" / "removed-jobs.json"  # culled jobs never come back
+    for r in json.loads(removed.read_text(encoding="utf-8")) if removed.exists() else []:
+        existing.add(norm(r.get("company")) + "|" + norm(r.get("title")))
 
     def fetch(feed):
         try:
@@ -202,5 +210,7 @@ if __name__ == "__main__":
         discover(sys.argv[2:])
     elif len(sys.argv) == 2 and sys.argv[1] == "scan":
         scan()
+    elif len(sys.argv) == 4 and sys.argv[1] == "scan" and sys.argv[2] == "--place":
+        scan(sys.argv[3])
     else:
         sys.exit(__doc__)

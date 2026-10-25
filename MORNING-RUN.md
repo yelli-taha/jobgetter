@@ -12,9 +12,13 @@ NOT use "Sign in with Google" unless the user OK'd it in this same session.
 Read data/last_scan.txt. If it already has today's date and the user didn't start this run themselves, stop:
 nothing to do. Otherwise read CLAUDE.md, me/my-rules.md, PROGRESS.md and me/search-criteria/search-criteria.md.
 
+Location: if the user named a place ("morning run for Lyon"), the whole run covers ONLY that place (CLAUDE.md
+"Run location"): add `--place "Lyon"` to the feeds and discover commands below and use that place's rules.
+Otherwise it covers their normal area.
+
 ## 1. Collect
 1. Feeds: `PY tools/feeds.py scan` -> data/candidates.json (public Greenhouse/Lever/Ashby/SmartRecruiters/
-   Workable feeds, filtered by settings.json location_keywords).
+   Workable feeds, filtered by settings.json location_keywords; jobs removed earlier never come back).
 2. Gmail: search recent job-alert emails, e.g. `newer_than:2d (job OR jobs OR hiring OR vacancy OR "job alert")`
    (widen to the days since data/last_scan.txt if runs were missed). Skip thread ids `PY tools/jobs.py is-seen`
    already knows. From each alert take title, company and location of postings in the user's area. Mark threads
@@ -22,9 +26,8 @@ nothing to do. Otherwise read CLAUDE.md, me/my-rules.md, PROGRESS.md and me/sear
 3. For each alert job: web search for the same posting on the company's OWN site (exclude the blocked sites).
    Found -> use its text and apply link (and `PY tools/feeds.py discover "<Company>"` if it may have a feed).
    Not found anywhere but the job board -> cull it (keep = apply).
-4. Careers pages: `PY tools/sweep.py today`, then sweep each company (docs/website-playbook.md Part 1).
-   Skip if the user said not to do target-company searches.
-5. A few broad web searches for the user's target roles in their area at any company.
+4. Discovery: `PY tools/discover.py plan`, run its searches, add new companies to the memory, investigate up to
+   discovery_companies_per_run companies and record each one (CLAUDE.md "Discovering companies").
 
 ## 2. Score and add
 Score every job against me/ (CLAUDE.md "Collecting and scoring"). Write them as a list in a JSON file and run
@@ -50,4 +53,5 @@ application form (read only), check sign-in. Then work down the `new` jobs if th
   2. Prepared jobs: company, role, score, one line each.
   3. What needs the user (personal-fact questions as ONE numbered list; answers to check).
   4. What you culled and why (one line each, grouped).
-  5. Next step: "Type **fill all ready** and I'll fill these in Chrome and stop before Submit."
+  5. New companies found today (`PY tools/discover.py new-today`), one line each.
+  6. Next step: "Type **fill all ready** and I'll fill these in Chrome and stop before Submit."

@@ -184,10 +184,20 @@ submits the first, put the second job's files on the profile, then fill the seco
 - **Lever:** plain HTML; JS setters and radio clicks work. Parses the resume and fills "Current company" from
   it: fix it if the user isn't employed there now. Verify the file is in the input and the storage id is set.
 - **SmartRecruiters:** file input inside shadow DOM: user attaches the file. Never "Apply with Indeed".
-- **Workable:** cookie banner (Decline all). Address field duplicates if set twice.
-- **Teamtailor:** decline cookies; open `<job url>/applications/new` directly; JS setters work.
+  Screening pages (oneclick-ui) use search-selects inside shadow DOM: click the field, type to filter, click the
+  option; JS can't read them, so check the values by screenshot.
+- **Workable:** cookie banner (Decline all). Address field duplicates if set twice. The optional Education /
+  Experience "+ Add" entries have MM/YYYY date pickers that can freeze the tab: skip them (the resume and summary
+  cover it) and paste the letter into the "Cover letter" box. Some forms have two upload fields (Resume and a
+  required "Upload your CV"): fill both.
+- **Teamtailor:** open `<job url>/applications/new` directly; JS setters work. Declining the cookie banner
+  reloads the page and wipes anything typed: decline FIRST, wait a few seconds, then fill and read back.
 - **Avature:** one shared profile; set "Do you want to update your resume?" to Yes or the old file
-  stays. A privacy acknowledgement step is the user's to tick.
+  stays. A privacy acknowledgement step is the user's to tick. The profile can keep an old resume; each
+  application carries its own attached files, so check the files on the application itself. Dropdowns load their
+  options from the site (select2): if the cookie banner reloads the page, or many dropdowns are opened quickly,
+  they can stop loading ("The results could not be loaded"). Open each dropdown once, wait ~2 seconds, pick, move
+  on; if they stop loading, leave the job and try again later.
 - **Eightfold:** React selects (click, type, pick). Date pickers stick open: type MM/DD/YYYY + Enter,
   then hide the popup. Candidate profile is read-only and keeps old resumes.
 - **Amazon (amazon.jobs):** separate login at passport.amazon.jobs. Pre-completed steps carry old data, including the

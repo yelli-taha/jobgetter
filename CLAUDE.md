@@ -63,10 +63,20 @@ In this file, `PY` means the project's Python: `.venv\Scripts\python.exe` on Win
 
 ## Collecting and scoring
 - Sources: job-alert emails in Gmail (any job site's alerts, as long as it's clearly a job alert; ignore
-  application confirmations, rejections, newsletters, marketing), public job feeds (data/feeds.json), the
-  careers pages of target companies (data/careers-pages.json, in rotation), jobs the user adds on the dashboard,
-  and a few broad web searches.
-- Freedom on companies: find fitting jobs at ANY company in the user's area. The target list only boosts ranking.
+  application confirmations, rejections, newsletters, marketing), public job feeds (data/feeds.json), Discovery
+  (new companies found by rotating searches, remembered in data/companies.json; see "Discovering companies"),
+  and jobs the user adds on the dashboard.
+- Freedom on companies: find fitting jobs at ANY company in the user's area. The target list only boosts ranking;
+  it is never a schedule.
+- Run location: no place named = the user's normal area (settings + search-criteria.md). A place named ("morning
+  run for Lyon") = ONLY that place for the whole run: `PY tools/feeds.py scan --place Lyon`,
+  `PY tools/discover.py plan --place Lyon` / `checked ... --place Lyon` (kept separate from the normal area),
+  alert emails only for postings there, and that place's own rules (pay, eligibility such as nationals-only roles)
+  from search-criteria.md. If search-criteria.md has no rules for that place yet, use the general ones and ask
+  the user once in the summary.
+- Closing dates: graduate and trainee programmes can open and close within two weeks. Read the closing date on the
+  application page itself (watch the date format: many countries write DD/MM/YYYY) and, when a programme has
+  closed, note in the company's memory record when the next cycle usually opens.
 - Location, seniority, job types, remote rules, languages and pay come from me/search-criteria/search-criteria.md.
   Never hard-code them.
 - Score 0-100 with a 1-2 sentence reason. Target companies rank higher. Flag jobs where a skill the user is
@@ -150,23 +160,52 @@ re-check those sites -> fill the rest.
 6. Show the Sign-in checklist (`PY tools/signin.py checklist`) at the top of your summary; it also shows on the
    dashboard's "Ready to submit" page. Phone: counts only. When the user says "signed in", re-check each site;
    set `signed_in_ok: true` on jobs whose site now shows the form (that removes them from the checklist), fill them.
-7. Email-only applications: Gmail draft to the address the posting gives, subject as the posting asks, short
+7. Sites that need a new profile/account: when the user is in the chat and asks, open the sign-up page in a
+   visible tab and pre-fill everything EXCEPT the password, consent/terms boxes and ID numbers (name, email, phone,
+   address from me/personal). Hand over in one message: the user sets the password (or picks Sign in with Google),
+   ticks the terms, clicks Create and confirms the verification email themselves. When they say "done" / "signed
+   in", fill the rest of the profile and the application. Record the site in data/accounts.md (never the password)
+   and its key with `PY tools/signin.py add`. Whenever the user has to attach a file themselves, send them the
+   exact PDF so they never have to look for it.
+8. Email-only applications: Gmail draft to the address the posting gives, subject as the posting asks, short
    message, resume + letter attached (if attaching isn't possible, say exactly which files to drag in). NEVER
    send. Set job `email_draft` = short note, status `needs_you`, `needs_you` = ["Gmail draft waiting: check it,
    attach the files if missing, and send it yourself"].
-8. Filled-but-not-submitted forms from earlier: if their files are older than the current drafts, set
+9. Filled-but-not-submitted forms from earlier: if their files are older than the current drafts, set
    `old_files` = note and swap the files on the next fill. Never reuse a tab or saved draft filled before the
    job's current files were built.
-9. When the master resume changes: list every filled-but-not-submitted application and re-tailor + re-upload
+10. When the master resume changes: list every filled-but-not-submitted application and re-tailor + re-upload
    (resume_kit.rebuild) before the user submits.
-10. Submitted: the dashboard's "Mark as submitted" button sets the status and adds the past-applications row by
+11. Submitted: the dashboard's "Mark as submitted" button sets the status and adds the past-applications row by
     itself. Only if the user tells you in chat instead: set status `submitted`, `submitted_on`, and add the row
     to past-applications.md yourself (check it isn't there already).
 
-## Careers pages and sweeps
-Follow docs/website-playbook.md Part 1. `PY tools/sweep.py today` lists today's companies (rotation,
-`sweep_per_run`; priority ones every 2 days). Narrow to the user's area first, collect everything on the
-filtered list, record what worked in data/site-notes.md. Never open staff/employee sign-in pages.
+## Discovering companies
+There is no fixed list of companies checked every day. Each run, `PY tools/discover.py plan` gives today's
+searches (`discovery_searches_per_run`, default 4: always one search on job systems such as Greenhouse, Lever,
+Ashby, Workable, Workday, SmartRecruiters, plus a rotating mix of "lenses": a second job-system search, start-ups
+with recent funding, multinationals opening or growing offices in the area, the biggest companies in one sector,
+lookalikes of companies the user applied to, graduate and trainee programmes) and up to 3 "watch" companies due a
+re-check. Roles, places and sectors come from settings.json `discovery_roles`, `discovery_places`,
+`discovery_sectors`.
+1. Run each search with WebSearch using the domains the plan gives. Pick out EMPLOYERS (not job boards or agencies).
+2. For each company: `PY tools/discover.py known "<Company>"` first. Unknown -> add it (`PY tools/discover.py add
+   <file.json>` with name, type multinational/top_local/startup/other, found_via = the lens, why = one line).
+   Known and checked within `discovery_recheck_days` -> skip, unless the search showed a specific fitting job.
+3. Investigate up to `discovery_companies_per_run` companies (new first, then re-checks): find their careers page
+   and the job list for the user's area (docs/website-playbook.md Part 1, max ~10 steps), collect every fitting
+   job (keep = apply), then `PY tools/discover.py checked "<Company>" --verdict watch|skip --found N --note "..."`
+   (watch = good employer for the user; skip = nothing fitting / no roles in the area / no way to apply on its own
+   site). Save `careers_url`, `system` and `jobs_url` in the record (`add` updates existing records).
+4. If the company uses a public feed system (Greenhouse, Lever, Ashby, SmartRecruiters, Workable):
+   `PY tools/feeds.py discover "<Company>"`, check it really is that company (some feed types answer for any
+   name), and set `feed` in its memory record: its jobs are then checked automatically every run.
+5. Jobs found this way: source "Found while browsing <Company> careers page".
+6. Record what worked on each careers site in data/site-notes.md. Never open staff/employee sign-in pages.
+7. The summary has a short "New companies found today" section (`PY tools/discover.py new-today`).
+(`tools/sweep.py` is the old fixed rotation; it's only used now to record a site Claude couldn't read:
+`PY tools/sweep.py failed "<Company>" "<what was tried>"` plus `manual_url` = the direct job-list link in
+data/careers-pages.json, which puts it on the checklist as "please check manually".)
 
 ## Learning from corrections
 - When the user corrects a draft, an answer or your behaviour and says "save this to the rules" (or clearly
@@ -199,9 +238,13 @@ filtered list, record what worked in data/site-notes.md. Never open staff/employ
   - Date: YYYY-MM-DD
   ```
   The dashboard adds `- My answer: ...`; file it in the right section and remove it from the waiting list.
-- settings.json: home_country, location_keywords, top_job_threshold, max_fills_per_run, sweep_per_run,
-  keep_means_apply, ntfy_topic, blocked_sites, auto_submit (false).
-- data/: feeds.json, careers-pages.json, site-notes.md, sites.json (sign-in pages), accounts.md (sites with an
+- settings.json: home_country, location_keywords, top_job_threshold, max_fills_per_run, discovery_roles,
+  discovery_places, discovery_sectors, discovery_searches_per_run, discovery_companies_per_run,
+  discovery_recheck_days, keep_means_apply, ntfy_topic, blocked_sites, auto_submit (false).
+- data/companies.json: the company memory (tools/discover.py): every company found or investigated, with type,
+  how it was found, why, careers system, job-list URL, verdict (watch/skip/new), last check, per-place verdicts
+  (`by_place`) and history.
+- data/: feeds.json, careers-pages.json (old target list, imported into companies.json), site-notes.md, sites.json (sign-in pages), accounts.md (sites with an
   account; never passwords), seen.json, removed-jobs.json, candidates.json, last_scan.txt, last_run.txt.
 - pdflatex: MiKTeX (Windows) or TinyTeX / MacTeX (Mac). tools/build.py finds it, even when it isn't on PATH.
 
@@ -214,7 +257,10 @@ When the user says "update JobGetter":
    README.md, START-HERE.md, CHANGELOG.md, VERSION, requirements.txt, the launcher files, .gitignore, starter/.
    NEVER touch me/, jobs/, data/ or settings.json. If starter/ has a data file we don't have yet, copy it in.
    If starter/settings.json has keys ours lacks, add them with their defaults.
-4. `PY -m pip install -r requirements.txt`, restart the dashboard, check every page loads, tell the user what changed.
+4. New settings or data that need the user's values: fill them from me/ (e.g. 1.1.0 Discovery: set
+   `discovery_roles` from the role types in search-criteria.md and `discovery_places` from the user's area, then run
+   `PY tools/discover.py seed` once to import their target companies and feeds into data/companies.json).
+5. `PY -m pip install -r requirements.txt`, restart the dashboard, check every page loads, tell the user what changed.
 
 ## Building and fixing
 - If something in JobGetter breaks, fix it, test it (run the dashboard and open the page), and note it in PROGRESS.md.
