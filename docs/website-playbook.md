@@ -112,8 +112,9 @@ Go down the ladder only as far as needed. After each attempt, READ THE VALUE BAC
 - Make sure NO other resume is still attached or selected (sites keep old uploads). Remove or deselect old ones.
 - Save on the job: `attached` = [{"name": <file name the site shows>, "confirmed": <time>}]. Can't confirm? Set
   `check_attachment` = a short note and status `needs_you`, never "ready".
-- Upload hidden in a shadow DOM where `file_upload` can't reach (SmartRecruiters' one-click form): fill the
-  rest, then `needs_you` with the exact path for the user to attach.
+- Upload hidden in a shadow DOM or web component where `file_upload` can't reach (SmartRecruiters' one-click
+  form, newer SuccessFactors portals): fill the rest, send the user the exact PDF, then `needs_you` with the
+  exact path for the user to attach.
 - Some sites drop the file when Submit is clicked. If the user reports that,
   give them the PDF to attach right before submitting, and note it in site-notes.
 
@@ -176,6 +177,11 @@ submits the first, put the second job's files on the profile, then fill the seco
   over: select() first. Separate account per company; sessions expire fast.
 - **SAP SuccessFactors:** UI5 combo boxes (type + pick). "Save" keeps a draft; "Apply" submits (never click it).
   Application login is separate from the careers site.
+  Newer candidate portals (career5 "portalcareer", built from UI5 web components): the step-1 resume "Browse"
+  button is a web component `file_upload` can't reach. Fill what you can, send the user the exact PDF, and ask
+  them to attach it and click Next, then continue. Only ONE application can be in progress per account at a
+  time: "Apply" on a second job just sends you back to the careers home. Finish (or have the user submit) one
+  before starting the next.
 - **Oracle Taleo:** plain HTML, JS setters work. "Add" buttons reload the page: one at a time. University lists
   can be country-only: pick "Other" and type the name. A reference may be required ("NA" has been accepted).
   Ticking a document as "Resume" needs a real click. The last steps can include an e-signature (user's).

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+- **New lesson for SAP SuccessFactors sites** (the newer candidate portals): Claude can't attach the resume on
+  the first step there, so it sends you the PDF to attach yourself and then carries on. These sites also allow only
+  one application in progress at a time, so Claude finishes one before starting the next.
+
 ## 1.1.0
 - **Discovery: JobGetter now finds new companies by itself.** Instead of checking the same list of companies
   every day, each morning it runs a few different searches (job systems, start-ups that just raised money,
